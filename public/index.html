@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Item Manager</title>
+  <style>
+    :root {
+      --bg-color: #121212;
+      --text-color: #e0e0e0;
+      --input-bg: #1e1e1e;
+      --input-border: #555;
+      --card-bg: #1e1e1e;
+      --card-border: #333;
+      --button-bg: #1e88e5;
+      --button-hover: #1565c0;
+    }
+
+    body.light {
+      --bg-color: #f4f6f8;
+      --text-color: #333;
+      --input-bg: #fff;
+      --input-border: #ccc;
+      --card-bg: #fff;
+      --card-border: #ddd;
+      --button-bg: #3498db;
+      --button-hover: #2980b9;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: var(--bg-color);
+      color: var(--text-color);
+      padding: 40px;
+      max-width: 800px;
+      margin: auto;
+      transition: background-color 0.3s, color 0.3s;
+    }
+
+    h1, h2 {
+      color: var(--text-color);
+    }
+
+    .theme-toggle {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+    }
+
+    input {
+      padding: 10px;
+      margin: 5px 10px 5px 0;
+      border: 1px solid var(--input-border);
+      border-radius: 4px;
+      width: 200px;
+      background-color: var(--input-bg);
+      color: var(--text-color);
+    }
+
+    button {
+      padding: 10px 15px;
+      background-color: var(--button-bg);
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      margin: 5px 5px 5px 0;
+    }
+
+    button:hover {
+      background-color: var(--button-hover);
+    }
+
+    .item-block {
+      background-color: var(--card-bg);
+      border: 1px solid var(--card-border);
+      padding: 15px;
+      border-radius: 6px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin: 10px 0;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    }
+
+    .item-block span {
+      flex-grow: 1;
+    }
+
+    #itemList {
+      list-style-type: none;
+      padding: 0;
+    }
+
+    #itemList button {
+      margin-left: 10px;
+    }
+  </style>
+</head>
+<body>
+  <div class="theme-toggle">
+    <label>
+      <input type="checkbox" id="themeSwitch"> Light Mode
+    </label>
+  </div>
+
+  <h1>Item Manager</h1>
+
+  <h2>Create Item</h2>
+  <input id="name" placeholder="Name">
+  <input id="desc" placeholder="Description">
+  <button onclick="createItem()">Add</button>
+
+  <h2>Items</h2>
+  <button onclick="getItems()">Refresh List</button>
+  <ul id="itemList"></ul>
+
+  <script>
+    const apiBase = '/.netlify/functions';
+
+    function getItems() {
+      fetch(`${apiBase}/getItems`)
+        .then(res => res.json())
+        .then(data => {
+          const list = document.getElementById('itemList');
+          list.innerHTML = '';
+          data.forEach(item => {
+            const li = document.createElement('li');
+            li.className = 'item-block';
+            const text = document.createElement('span');
+            text.textContent = `${item.name} - ${item.description}`;
+
+            const editBtn = document.createElement('button');
+            editBtn.textContent = 'Edit';
+            editBtn.onclick = () => showEditForm(item);
+
+            const delBtn = document.createElement('button');
+            delBtn.textContent = 'Delete';
+            delBtn.onclick = () => deleteItem(item.id);
+
+            li.appendChild(text);
+            li.appendChild(editBtn);
+            li.appendChild(delBtn);
+            list.appendChild(li);
+          });
+        });
+    }
+
+    function createItem() {
+      const name = document.getElementById('name').value;
+      const description = document.getElementById('desc').value;
+
+      fetch(`${apiBase}/createItem`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name, description })
+      }).then(() => {
+        getItems();
+        document.getElementById('name').value = '';
+        document.getElementById('desc').value = '';
+      });
+    }
+
+    function deleteItem(id) {
+      fetch(`${apiBase}/deleteItem?id=${id}`, {
+        method: 'DELETE'
+      }).then(() => getItems());
+    }
+
+    function showEditForm(item) {
+      const newName = prompt("Enter new name:", item.name);
+      const newDesc = prompt("Enter new description:", item.description);
+      if (newName !== null && newDesc !== null) {
+        updateItem(item.id, newName, newDesc);
+      }
+    }
+
+    function updateItem(id, name, description) {
+      fetch(`${apiBase}/updateItem?id=${id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name, description })
+      }).then(() => getItems());
+    }
+
+    // Theme toggle logic
+    const themeSwitch = document.getElementById('themeSwitch');
+
+    function setTheme(isLight) {
+      document.body.classList.toggle('light', isLight);
+      localStorage.setItem('theme', isLight ? 'light' : 'dark');
+      themeSwitch.checked = isLight;
+    }
+
+    // Initialize theme
+    const savedTheme = localStorage.getItem('theme');
+    setTheme(savedTheme === 'light');
+
+    themeSwitch.addEventListener('change', () => {
+      setTheme(themeSwitch.checked);
+    });
+
+    getItems();
+  </script>
+</body>
+</html>
