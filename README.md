@@ -58,6 +58,9 @@ JAMStack-CRUD-Vault/
 
    Open your browser and navigate to `http://localhost:8888/`
 
+## screenshots of working
+![hosted locally](image.png)
+
 ## 🤝 Contributing
 
 Contributions are welcome! Please fork the repository and submit a pull request for any enhancements or bug fixes.
