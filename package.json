@@ -5,6 +5,7 @@
   "type": "module",
   "scripts": {
     "start": "node index.js",
+    "build": "your_build_command_here",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
