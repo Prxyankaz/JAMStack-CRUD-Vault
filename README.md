@@ -59,7 +59,10 @@ JAMStack-CRUD-Vault/
    Open your browser and navigate to `http://localhost:8888/`
 
 ## screenshots of working
+DARK MODE
 ![hosted locally](image.png)
+LIGHT MODE
+![alt text](image-1.png)
 
 ## 🤝 Contributing
 
